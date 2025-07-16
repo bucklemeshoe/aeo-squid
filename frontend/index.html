@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEO Lite Assessment - How AI-Ready Is Your Website?</title>
+    <meta name="description" content="Get your website's AI readiness score in under 3 minutes. Free automated analysis for Answer Engine Optimization.">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_TRACKING_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_TRACKING_ID');
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#" style="color: #2563eb;">
+                <i class="fas fa-robot me-2"></i>AEO Lite Assessment
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section py-5 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <div class="row align-items-center min-vh-75">
+                <div class="col-lg-6 text-white">
+                    <h1 class="display-4 fw-bold text-white mb-4">
+                        <span class="badge bg-success me-3">LITE</span>How AI-Ready Is Your Website?
+                    </h1>
+                    <p class="lead text-white mb-4">
+                        Get your automated AEO (Answer Engine Optimization) score in under 3 minutes. 
+                        Fast, free analysis of how well your website performs with AI-powered search engines like ChatGPT, 
+                        Google Bard, and Perplexity.
+                    </p>
+                    <div class="alert alert-info bg-white bg-opacity-90 border-0 mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lite Version:</strong> Automated technical analysis with core metrics. 
+                        <a href="#upgrade" class="text-decoration-none"><strong>Upgrade to Pro</strong></a> for AI-powered content insights!
+                    </div>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="badge bg-success me-3 p-2">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span>Based on proven AEO methodology</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="badge bg-success me-3 p-2">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span>Professional insights in 2-3 minutes</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="badge bg-success me-3 p-2">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span>Actionable recommendations included</span>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <!-- Analysis Form -->
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-4">
+                            <h3 class="card-title text-center mb-4">
+                                <i class="fas fa-search text-primary me-2"></i>
+                                Analyze Your Website
+                            </h3>
+                            
+                            <form id="analysis-form" novalidate>
+                                <div class="mb-3">
+                                    <label for="website-url" class="form-label">Website URL</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-globe"></i>
+                                        </span>
+                                        <input 
+                                            type="url" 
+                                            class="form-control form-control-lg" 
+                                            id="website-url" 
+                                            placeholder="https://yourwebsite.com"
+                                            required
+                                        >
+                                        <div class="invalid-feedback">
+                                            Please enter a valid website URL.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-envelope"></i>
+                                        </span>
+                                        <input 
+                                            type="email" 
+                                            class="form-control form-control-lg" 
+                                            id="email" 
+                                            placeholder="your@email.com"
+                                            required
+                                        >
+                                        <div class="invalid-feedback">
+                                            Please enter a valid email address.
+                                        </div>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-lock me-1"></i>
+                                        We'll email your results. No spam, unsubscribe anytime.
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="privacy-consent" required>
+                                    <label class="form-check-label" for="privacy-consent">
+                                        I agree to the <a href="#" class="text-decoration-none">Privacy Policy</a> 
+                                        and <a href="#" class="text-decoration-none">Terms of Service</a>
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        Please agree to the terms and privacy policy.
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="analyze-btn">
+                                    <i class="fas fa-rocket me-2"></i>
+                                    Analyze My Website
+                                </button>
+                            </form>
+                            
+                            <!-- Trust Signals -->
+                            <div class="text-center mt-4">
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Secure • Private • No Credit Card Required
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+                    <p class="lead text-muted mb-5">
+                        Our AI-powered analysis examines your website across 4 critical areas 
+                        to determine how ready you are for the future of search.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-tachometer-alt text-primary fs-4"></i>
+                            </div>
+                            <h5 class="card-title">Performance Analysis</h5>
+                            <p class="card-text text-muted">
+                                Core Web Vitals, page speed, and mobile optimization 
+                                that AI engines prioritize.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-code text-success fs-4"></i>
+                            </div>
+                            <h5 class="card-title">Schema Markup</h5>
+                            <p class="card-text text-muted">
+                                Structured data detection and validation for 
+                                FAQ, Q&A, and How-To schemas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-comments text-warning fs-4"></i>
+                            </div>
+                            <h5 class="card-title">Content Structure</h5>
+                            <p class="card-text text-muted">
+                                Question-answer patterns, heading hierarchy, 
+                                and conversational query optimization.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-cogs text-info fs-4"></i>
+                            </div>
+                            <h5 class="card-title">Technical SEO</h5>
+                            <p class="card-text text-muted">
+                                HTTPS, mobile-friendliness, sitemaps, and 
+                                other technical factors AI crawlers need.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="display-5 fw-bold mb-4">
+                        Professional AEO Analysis in Minutes
+                    </h2>
+                    <p class="lead text-muted mb-4">
+                        Get insights that typically require expensive consultants or 
+                        complex tools, delivered in an easy-to-understand format.
+                    </p>
+                    
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-chart-line text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">100-Point Scoring System</h6>
+                                    <p class="text-muted mb-0">Clear, actionable scores across all AEO categories</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-list-ol text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Prioritized Recommendations</h6>
+                                    <p class="text-muted mb-0">Focus on what matters most for immediate impact</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-file-pdf text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Professional PDF Reports</h6>
+                                    <p class="text-muted mb-0">Share results with your team or developers</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-headset text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Expert Implementation Support</h6>
+                                    <p class="text-muted mb-0">Optional consultation for complex improvements</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="text-center">
+                        <img src="assets/images/dashboard-preview.png" alt="Dashboard Preview" class="img-fluid rounded shadow" style="max-width: 500px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3">Ready to Future-Proof Your Website?</h2>
+                    <p class="lead mb-4">
+                        Join hundreds of businesses already optimizing for AI search. 
+                        Get your free assessment in the next 3 minutes.
+                    </p>
+                    <a href="#" class="btn btn-light btn-lg" onclick="document.getElementById('website-url').focus()">
+                        <i class="fas fa-rocket me-2"></i>
+                        Start Free Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2024 AEO Assessment Tool. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-light text-decoration-none me-3">Privacy Policy</a>
+                    <a href="#" class="text-light text-decoration-none me-3">Terms of Service</a>
+                    <a href="#contact" class="text-light text-decoration-none">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="assets/js/main.js"></script>
+</body>
+</html> 
