@@ -7,6 +7,7 @@ import logging
 from typing import Dict, List, Any, Optional
 from bs4 import BeautifulSoup
 from .faq_analyzer import IntelligentFAQAnalyzer, FAQAnalysisResult
+from .content_enhancement import AdvancedContentIntelligence
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ class ContentAnalyzer:
     
     def __init__(self):
         self.faq_analyzer = IntelligentFAQAnalyzer()
+        self.advanced_analyzer = AdvancedContentIntelligence()
     
     def analyze_content(self, soup: BeautifulSoup) -> Dict[str, Any]:
         """
@@ -40,9 +42,17 @@ class ContentAnalyzer:
             # AEO-specific content analysis
             aeo_metrics = self._analyze_aeo_content(soup, faq_analysis)
             
-            # Calculate overall content intelligence score
-            intelligence_score = self._calculate_content_intelligence_score(
-                basic_metrics, faq_analysis, structure_analysis, aeo_metrics
+            # Advanced content intelligence analysis (NEW!)
+            basic_analysis_data = {
+                'basic_metrics': basic_metrics,
+                'faq_analysis': self._serialize_faq_analysis(faq_analysis)
+            }
+            advanced_results = self.advanced_analyzer.analyze_advanced_content(soup, basic_analysis_data)
+            
+            # Calculate overall content intelligence score (enhanced)
+            intelligence_score = max(
+                advanced_results.content_intelligence_score,
+                self._calculate_content_intelligence_score(basic_metrics, faq_analysis, structure_analysis, aeo_metrics)
             )
             
             return {
@@ -53,7 +63,17 @@ class ContentAnalyzer:
                 'content_intelligence_score': intelligence_score,
                 'recommendations': self._generate_content_recommendations(
                     basic_metrics, faq_analysis, structure_analysis, aeo_metrics
-                )
+                ),
+                'advanced_intelligence': {
+                    'content_intelligence_score': advanced_results.content_intelligence_score,
+                    'entities_detected': len(advanced_results.entities_detected),
+                    'semantic_insights': len(advanced_results.semantic_insights),
+                    'topic_authority_score': advanced_results.topic_authority_score,
+                    'voice_search_optimization': advanced_results.voice_search_optimization,
+                    'dynamic_recommendations': advanced_results.dynamic_recommendations,
+                    'competitive_advantages': advanced_results.competitive_advantages,
+                    'content_gaps': advanced_results.content_gaps
+                }
             }
             
         except Exception as e:
