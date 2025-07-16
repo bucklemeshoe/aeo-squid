@@ -1,5 +1,5 @@
 """
-Schema markup analysis and validation
+Enhanced Schema markup analysis and validation with AEO Intelligence
 """
 
 import aiohttp
@@ -9,29 +9,31 @@ import logging
 from typing import Dict, List, Any, Optional
 from bs4 import BeautifulSoup
 from models.analysis import SchemaResult
+from .schema_intelligence import IntelligentSchemaAnalyzer, IntelligentSchemaResult
 
 
 logger = logging.getLogger(__name__)
 
 
 class SchemaAnalyzer:
-    """Schema markup analysis and validation"""
+    """Enhanced schema markup analysis with AEO intelligence"""
     
     def __init__(self):
-        """Initialize schema analyzer"""
+        """Initialize enhanced schema analyzer"""
         self.session = None
+        self.intelligent_analyzer = IntelligentSchemaAnalyzer()
     
     async def analyze(self, url: str) -> SchemaResult:
         """
-        Analyze schema markup on the website
+        Analyze schema markup on the website (legacy compatible)
         
         Args:
             url: Website URL to analyze
             
         Returns:
-            Schema analysis results
+            Schema analysis results (backward compatible)
         """
-        logger.info(f"Starting schema analysis for {url}")
+        logger.info(f"Starting enhanced schema analysis for {url}")
         
         try:
             # Fetch page content
@@ -39,32 +41,133 @@ class SchemaAnalyzer:
             if not html_content:
                 return self._get_default_schema_result()
             
-            # Extract schemas
-            jsonld_schemas = self._extract_jsonld_schemas(html_content)
-            microdata_schemas = self._extract_microdata_schemas(html_content)
+            # Run enhanced analysis
+            soup = BeautifulSoup(html_content, 'html.parser')
+            enhanced_result = self.intelligent_analyzer.analyze_schema_intelligence(soup, url)
             
-            # Analyze schema types
-            schema_analysis = self._analyze_schema_types(jsonld_schemas + microdata_schemas)
+            # Convert to legacy format for backward compatibility
+            legacy_result = self._convert_to_legacy_format(enhanced_result)
             
-            # Validate schemas
-            validation_errors = self._validate_schemas(jsonld_schemas)
+            logger.info(f"Enhanced schema analysis completed for {url}. Intelligence Score: {enhanced_result.schema_intelligence_score:.1f}/100")
+            return legacy_result
             
-            result = SchemaResult(
-                faq_schema_present=schema_analysis['faq_present'],
-                qa_schema_present=schema_analysis['qa_present'],
-                howto_schema_present=schema_analysis['howto_present'],
-                organization_schema_present=schema_analysis['organization_present'],
-                local_business_schema_present=schema_analysis['local_business_present'],
-                validation_errors=validation_errors,
-                total_schemas_found=len(jsonld_schemas) + len(microdata_schemas)
-            )
+        except Exception as e:
+            logger.error(f"Enhanced schema analysis failed for {url}: {e}")
+            return self._get_default_schema_result()
+    
+    async def analyze_with_intelligence(self, url: str) -> Dict[str, Any]:
+        """
+        Analyze schema markup with full intelligence capabilities
+        
+        Args:
+            url: Website URL to analyze
             
-            logger.info(f"Schema analysis completed for {url}")
+        Returns:
+            Enhanced schema analysis results with intelligence
+        """
+        logger.info(f"Starting full intelligence schema analysis for {url}")
+        
+        try:
+            # Fetch page content
+            html_content = await self._fetch_page_content(url)
+            if not html_content:
+                return self._get_default_enhanced_result()
+            
+            # Run enhanced analysis
+            soup = BeautifulSoup(html_content, 'html.parser')
+            enhanced_result = self.intelligent_analyzer.analyze_schema_intelligence(soup, url)
+            
+            # Convert to legacy format for compatibility
+            legacy_result = self._convert_to_legacy_format(enhanced_result)
+            
+            # Return both enhanced and legacy results
+            result = {
+                'enhanced': self._convert_enhanced_to_dict(enhanced_result),
+                'legacy': self._convert_legacy_to_dict(legacy_result),
+                'intelligence_upgrade': True,
+                'schema_intelligence_score': enhanced_result.schema_intelligence_score,
+                'aeo_readiness_score': enhanced_result.aeo_readiness_score
+            }
+            
+            logger.info(f"Full intelligence schema analysis completed for {url}. Intelligence: {enhanced_result.schema_intelligence_score:.1f}/100, AEO Readiness: {enhanced_result.aeo_readiness_score:.1f}/100")
             return result
             
         except Exception as e:
-            logger.error(f"Schema analysis failed for {url}: {e}")
-            return self._get_default_schema_result()
+            logger.error(f"Full intelligence schema analysis failed for {url}: {e}")
+            return self._get_default_enhanced_result()
+    
+    def _convert_to_legacy_format(self, enhanced_result: IntelligentSchemaResult) -> SchemaResult:
+        """
+        Convert enhanced results to legacy SchemaResult format
+        
+        Args:
+            enhanced_result: Enhanced analysis results
+            
+        Returns:
+            Legacy SchemaResult object
+        """
+        # Analyze detected schemas for legacy boolean flags
+        schema_types = {schema['schema_type'].lower() for schema in enhanced_result.schemas_detected}
+        
+        # Extract validation errors
+        validation_errors = []
+        for validation in enhanced_result.validation_results:
+            validation_errors.extend(validation.errors)
+        
+        return SchemaResult(
+            faq_schema_present=any('faq' in schema_type for schema_type in schema_types),
+            qa_schema_present=any('qa' in schema_type or 'question' in schema_type for schema_type in schema_types),
+            howto_schema_present=any('howto' in schema_type for schema_type in schema_types),
+            organization_schema_present=any('organization' in schema_type for schema_type in schema_types),
+            local_business_schema_present=any('localbusiness' in schema_type or 'local' in schema_type for schema_type in schema_types),
+            validation_errors=validation_errors[:10],  # Limit for legacy compatibility
+            total_schemas_found=len(enhanced_result.schemas_detected)
+        )
+    
+    def _convert_enhanced_to_dict(self, enhanced_result: IntelligentSchemaResult) -> Dict[str, Any]:
+        """Convert enhanced result to dictionary format"""
+        return {
+            'schemas_detected': enhanced_result.schemas_detected,
+            'validation_results': [
+                {
+                    'schema_type': v.schema_type,
+                    'is_valid': v.is_valid,
+                    'completeness_score': v.completeness_score,
+                    'aeo_optimization_score': v.aeo_optimization_score,
+                    'errors': v.errors,
+                    'warnings': v.warnings,
+                    'suggestions': v.suggestions,
+                    'content_match_score': v.content_match_score
+                } for v in enhanced_result.validation_results
+            ],
+            'opportunities': [
+                {
+                    'schema_type': o.schema_type,
+                    'confidence': o.confidence,
+                    'content_patterns_found': o.content_patterns_found,
+                    'implementation_difficulty': o.implementation_difficulty,
+                    'aeo_impact': o.aeo_impact,
+                    'code_example': o.code_example
+                } for o in enhanced_result.opportunities
+            ],
+            'schema_intelligence_score': enhanced_result.schema_intelligence_score,
+            'aeo_readiness_score': enhanced_result.aeo_readiness_score,
+            'missing_critical_schemas': enhanced_result.missing_critical_schemas,
+            'implementation_recommendations': enhanced_result.implementation_recommendations,
+            'content_analysis': enhanced_result.content_analysis
+        }
+    
+    def _convert_legacy_to_dict(self, legacy_result: SchemaResult) -> Dict[str, Any]:
+        """Convert legacy result to dictionary format"""
+        return {
+            'faq_schema_present': legacy_result.faq_schema_present,
+            'qa_schema_present': legacy_result.qa_schema_present,
+            'howto_schema_present': legacy_result.howto_schema_present,
+            'organization_schema_present': legacy_result.organization_schema_present,
+            'local_business_schema_present': legacy_result.local_business_schema_present,
+            'validation_errors': legacy_result.validation_errors,
+            'total_schemas_found': legacy_result.total_schemas_found
+        }
     
     async def _fetch_page_content(self, url: str) -> Optional[str]:
         """
@@ -79,7 +182,7 @@ class SchemaAnalyzer:
         try:
             timeout = aiohttp.ClientTimeout(total=20)
             headers = {
-                'User-Agent': 'Mozilla/5.0 (compatible; AEO-Analyzer/1.0)',
+                'User-Agent': 'Mozilla/5.0 (compatible; AEO-Analyzer/2.0)',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
             }
             
@@ -97,9 +200,10 @@ class SchemaAnalyzer:
             logger.error(f"Error fetching content from {url}: {e}")
             return None
     
+    # Legacy methods (maintained for backward compatibility)
     def _extract_jsonld_schemas(self, html_content: str) -> List[Dict[Any, Any]]:
         """
-        Extract JSON-LD schemas from HTML
+        Extract JSON-LD schemas from HTML (legacy method)
         
         Args:
             html_content: HTML content
@@ -137,7 +241,7 @@ class SchemaAnalyzer:
     
     def _extract_microdata_schemas(self, html_content: str) -> List[Dict[str, Any]]:
         """
-        Extract microdata schemas from HTML
+        Extract microdata schemas from HTML (legacy method)
         
         Args:
             html_content: HTML content
@@ -184,7 +288,7 @@ class SchemaAnalyzer:
     
     def _analyze_schema_types(self, schemas: List[Dict[Any, Any]]) -> Dict[str, bool]:
         """
-        Analyze schema types to identify AEO-relevant markup
+        Analyze schema types to identify AEO-relevant markup (legacy method)
         
         Args:
             schemas: List of schema objects
@@ -221,7 +325,7 @@ class SchemaAnalyzer:
     
     def _get_schema_type(self, schema: Dict[Any, Any]) -> Optional[str]:
         """
-        Extract schema type from schema object
+        Extract schema type from schema object (legacy method)
         
         Args:
             schema: Schema object
@@ -242,7 +346,7 @@ class SchemaAnalyzer:
     
     def _validate_schemas(self, schemas: List[Dict[Any, Any]]) -> List[str]:
         """
-        Validate schema markup for common issues
+        Validate schema markup for common issues (legacy method)
         
         Args:
             schemas: List of schema objects
@@ -294,31 +398,105 @@ class SchemaAnalyzer:
             total_schemas_found=0
         )
     
+    def _get_default_enhanced_result(self) -> Dict[str, Any]:
+        """
+        Return default enhanced result when analysis fails
+        
+        Returns:
+            Default enhanced analysis result
+        """
+        default_legacy = self._get_default_schema_result()
+        
+        return {
+            'enhanced': {
+                'schemas_detected': [],
+                'validation_results': [],
+                'opportunities': [],
+                'schema_intelligence_score': 0.0,
+                'aeo_readiness_score': 0.0,
+                'missing_critical_schemas': ['FAQPage', 'HowTo', 'QAPage'],
+                'implementation_recommendations': [
+                    "Unable to analyze schemas - please check page accessibility",
+                    "Consider implementing FAQ schema for AEO optimization"
+                ],
+                'content_analysis': {}
+            },
+            'legacy': self._convert_legacy_to_dict(default_legacy),
+            'intelligence_upgrade': False,
+            'schema_intelligence_score': 0.0,
+            'aeo_readiness_score': 0.0
+        }
+    
     async def get_schema_recommendations(self, result: SchemaResult) -> List[str]:
         """
-        Get schema markup recommendations
+        Get schema markup recommendations (enhanced with intelligence)
         
         Args:
             result: Schema analysis result
             
         Returns:
-            List of recommendations
+            List of enhanced recommendations
         """
         recommendations = []
         
+        # Enhanced recommendations based on AEO priorities
         if not result.faq_schema_present:
-            recommendations.append("Add FAQ schema markup to your Q&A content")
+            recommendations.append("🔥 HIGH PRIORITY: Add FAQ schema markup to boost voice search visibility")
         
         if not result.qa_schema_present:
-            recommendations.append("Implement QAPage schema for individual question pages")
+            recommendations.append("⭐ RECOMMENDED: Implement QAPage schema for individual question pages")
         
         if not result.howto_schema_present:
-            recommendations.append("Add HowTo schema to step-by-step guides")
+            recommendations.append("📋 VALUABLE: Add HowTo schema to step-by-step guides for featured snippets")
         
         if not result.organization_schema_present:
-            recommendations.append("Add Organization schema to improve brand recognition")
+            recommendations.append("🏢 FOUNDATION: Add Organization schema to improve brand recognition")
         
         if result.validation_errors:
-            recommendations.append("Fix schema validation errors to ensure proper indexing")
+            recommendations.append("⚠️ CRITICAL: Fix schema validation errors to ensure proper AI understanding")
         
-        return recommendations 
+        # Add advanced recommendations
+        if result.total_schemas_found == 0:
+            recommendations.append("🚀 START HERE: Begin with FAQ schema - it has the highest AEO impact")
+        elif result.total_schemas_found < 3:
+            recommendations.append("📈 EXPAND: Add more schema types to increase content intelligence")
+        
+        return recommendations
+    
+    async def get_intelligent_recommendations(self, enhanced_result: Dict[str, Any]) -> List[str]:
+        """
+        Get intelligent schema recommendations based on enhanced analysis
+        
+        Args:
+            enhanced_result: Enhanced analysis results
+            
+        Returns:
+            List of intelligent recommendations
+        """
+        if not enhanced_result.get('intelligence_upgrade', False):
+            # Fallback to basic recommendations
+            legacy_result = SchemaResult(**enhanced_result.get('legacy', {}))
+            return await self.get_schema_recommendations(legacy_result)
+        
+        enhanced_data = enhanced_result.get('enhanced', {})
+        recommendations = enhanced_data.get('implementation_recommendations', [])
+        
+        # Add intelligence-based insights
+        intelligence_score = enhanced_data.get('schema_intelligence_score', 0)
+        aeo_score = enhanced_data.get('aeo_readiness_score', 0)
+        
+        insights = []
+        
+        if intelligence_score < 30:
+            insights.append("🎯 FOCUS: Your schema intelligence is below 30% - prioritize critical AEO schemas")
+        elif intelligence_score < 50:
+            insights.append("📊 PROGRESS: Good start! Add more detailed properties to reach 50%+ intelligence")
+        elif intelligence_score < 70:
+            insights.append("⚡ ALMOST THERE: You're close to advanced intelligence - optimize existing schemas")
+        else:
+            insights.append("🏆 EXCELLENT: Advanced schema intelligence achieved! Focus on content alignment")
+        
+        if aeo_score < 50:
+            insights.append("🎤 VOICE SEARCH: Low AEO readiness - implement FAQ and HowTo schemas")
+        
+        return insights + recommendations[:4]  # Combine insights with top recommendations 
