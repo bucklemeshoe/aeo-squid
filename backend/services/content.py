@@ -1,405 +1,380 @@
 """
-Content structure analysis for AEO optimization
+Enhanced Content Analysis Service with FAQ Intelligence for AEO
 """
 
 import re
 import logging
 from typing import Dict, List, Any, Optional
 from bs4 import BeautifulSoup
-import aiohttp
-from models.analysis import ContentResult
-
+from .faq_analyzer import IntelligentFAQAnalyzer, FAQAnalysisResult
 
 logger = logging.getLogger(__name__)
 
 
 class ContentAnalyzer:
-    """Content structure and AEO analysis"""
+    """Enhanced content analysis with AI-powered FAQ detection and AEO optimization"""
     
     def __init__(self):
-        """Initialize content analyzer"""
-        self.faq_patterns = [
-            r'frequently\s+asked\s+questions?',
-            r'common\s+questions?',
-            r'faq',
-            r'q\s*&\s*a',
-            r'questions?\s+and\s+answers?'
-        ]
-        
-        self.question_patterns = [
-            r'\b(?:what|how|why|when|where|who|which)\b[^?]*\?',
-            r'\bis\s+[^?]*\?',
-            r'\bcan\s+[^?]*\?',
-            r'\bdoes\s+[^?]*\?',
-            r'\bdo\s+[^?]*\?'
-        ]
+        self.faq_analyzer = IntelligentFAQAnalyzer()
     
-    async def analyze(self, url: str) -> ContentResult:
+    def analyze_content(self, soup: BeautifulSoup) -> Dict[str, Any]:
         """
-        Analyze website content structure for AEO optimization
+        Comprehensive content analysis including advanced FAQ intelligence
         
         Args:
-            url: Website URL to analyze
+            soup: BeautifulSoup object of webpage content
             
         Returns:
-            Content analysis results
+            Dict containing comprehensive content analysis results
         """
-        logger.info(f"Starting content analysis for {url}")
-        
         try:
-            # Fetch page content
-            html_content = await self._fetch_page_content(url)
-            if not html_content:
-                return self._get_default_content_result()
+            # Get basic content metrics (original functionality)
+            basic_metrics = self._get_basic_metrics(soup)
             
-            # Parse HTML
-            soup = BeautifulSoup(html_content, 'html.parser')
+            # Enhanced FAQ intelligence analysis
+            faq_analysis = self.faq_analyzer.analyze_faq_intelligence(soup)
             
-            # Analyze different aspects
-            heading_score = self._analyze_heading_structure(soup)
-            faq_patterns = self._detect_faq_patterns(soup)
-            qa_detected = self._detect_qa_content(soup)
-            word_count = self._calculate_word_count(soup)
-            readability = self._calculate_readability_score(soup)
-            conversational_queries = self._count_conversational_queries(soup)
+            # Content structure analysis
+            structure_analysis = self._analyze_content_structure(soup)
             
-            result = ContentResult(
-                heading_structure_score=heading_score,
-                faq_patterns_found=faq_patterns,
-                qa_content_detected=qa_detected,
-                word_count=word_count,
-                readability_score=readability,
-                conversational_queries_optimized=conversational_queries
+            # AEO-specific content analysis
+            aeo_metrics = self._analyze_aeo_content(soup, faq_analysis)
+            
+            # Calculate overall content intelligence score
+            intelligence_score = self._calculate_content_intelligence_score(
+                basic_metrics, faq_analysis, structure_analysis, aeo_metrics
             )
             
-            logger.info(f"Content analysis completed for {url}")
-            return result
-            
-        except Exception as e:
-            logger.error(f"Content analysis failed for {url}: {e}")
-            return self._get_default_content_result()
-    
-    async def _fetch_page_content(self, url: str) -> Optional[str]:
-        """
-        Fetch webpage content
-        
-        Args:
-            url: Website URL
-            
-        Returns:
-            HTML content or None
-        """
-        try:
-            timeout = aiohttp.ClientTimeout(total=20)
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (compatible; AEO-Analyzer/1.0)',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            return {
+                'basic_metrics': basic_metrics,
+                'faq_analysis': self._serialize_faq_analysis(faq_analysis),
+                'structure_analysis': structure_analysis,
+                'aeo_metrics': aeo_metrics,
+                'content_intelligence_score': intelligence_score,
+                'recommendations': self._generate_content_recommendations(
+                    basic_metrics, faq_analysis, structure_analysis, aeo_metrics
+                )
             }
             
-            async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        content = await response.text()
-                        logger.debug(f"Successfully fetched content from {url}")
-                        return content
-                    else:
-                        logger.warning(f"HTTP {response.status} when fetching {url}")
-                        return None
-                        
         except Exception as e:
-            logger.error(f"Error fetching content from {url}: {e}")
-            return None
+            logger.error(f"Error in content analysis: {e}")
+            return self._fallback_analysis(soup)
     
-    def _analyze_heading_structure(self, soup: BeautifulSoup) -> int:
-        """
-        Analyze heading structure quality
+    def _get_basic_metrics(self, soup: BeautifulSoup) -> Dict[str, Any]:
+        """Get basic content metrics (original functionality enhanced)"""
+        text_content = soup.get_text()
         
-        Args:
-            soup: Parsed HTML content
-            
-        Returns:
-            Heading structure score (0-10)
-        """
-        score = 0
+        # Word and character counts
+        words = len(text_content.split())
+        characters = len(text_content)
         
-        try:
-            # Check for H1 tag
-            h1_tags = soup.find_all('h1')
-            if len(h1_tags) == 1:
-                score += 3
-            elif len(h1_tags) > 1:
-                score += 1  # Multiple H1s are not ideal
-            
-            # Check heading hierarchy
-            headings = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
-            if len(headings) >= 3:
-                score += 2
-            
-            # Check for question-based headings
-            question_headings = 0
-            for heading in headings:
-                text = heading.get_text().strip()
-                if any(re.search(pattern, text.lower()) for pattern in self.question_patterns):
-                    question_headings += 1
-            
-            if question_headings >= 3:
-                score += 3
-            elif question_headings >= 1:
-                score += 2
-            
-            # Check heading length (not too short, not too long)
-            good_length_headings = 0
-            for heading in headings:
-                text = heading.get_text().strip()
-                if 20 <= len(text) <= 100:
-                    good_length_headings += 1
-            
-            if good_length_headings >= len(headings) * 0.7:
-                score += 2
-            
-        except Exception as e:
-            logger.error(f"Error analyzing heading structure: {e}")
+        # Heading analysis
+        headings = {
+            'h1': len(soup.find_all('h1')),
+            'h2': len(soup.find_all('h2')),
+            'h3': len(soup.find_all('h3')),
+            'h4': len(soup.find_all('h4')),
+            'h5': len(soup.find_all('h5')),
+            'h6': len(soup.find_all('h6'))
+        }
         
-        return min(score, 10)
+        # Link analysis
+        internal_links = len([link for link in soup.find_all('a', href=True) 
+                            if self._is_internal_link(link['href'])])
+        external_links = len([link for link in soup.find_all('a', href=True) 
+                            if not self._is_internal_link(link['href'])])
+        
+        # Image analysis
+        images = len(soup.find_all('img'))
+        images_with_alt = len(soup.find_all('img', alt=True))
+        
+        # Content density
+        content_density = words / max(characters, 1) if characters > 0 else 0
+        
+        return {
+            'word_count': words,
+            'character_count': characters,
+            'headings': headings,
+            'total_headings': sum(headings.values()),
+            'internal_links': internal_links,
+            'external_links': external_links,
+            'total_links': internal_links + external_links,
+            'images': images,
+            'images_with_alt': images_with_alt,
+            'image_optimization_ratio': images_with_alt / max(images, 1),
+            'content_density': content_density,
+            'reading_time_minutes': max(words / 200, 1)  # Average reading speed
+        }
     
-    def _detect_faq_patterns(self, soup: BeautifulSoup) -> int:
-        """
-        Detect FAQ patterns in content
+    def _analyze_content_structure(self, soup: BeautifulSoup) -> Dict[str, Any]:
+        """Analyze content structure for AEO optimization"""
         
-        Args:
-            soup: Parsed HTML content
-            
-        Returns:
-            Number of FAQ patterns found
-        """
-        faq_count = 0
+        # Semantic HTML analysis
+        semantic_elements = {
+            'article': len(soup.find_all('article')),
+            'section': len(soup.find_all('section')),
+            'aside': len(soup.find_all('aside')),
+            'nav': len(soup.find_all('nav')),
+            'main': len(soup.find_all('main')),
+            'header': len(soup.find_all('header')),
+            'footer': len(soup.find_all('footer'))
+        }
         
-        try:
-            # Get all text content
-            text_content = soup.get_text().lower()
-            
-            # Check for FAQ section indicators
-            for pattern in self.faq_patterns:
-                if re.search(pattern, text_content, re.IGNORECASE):
-                    faq_count += 1
-            
-            # Look for question-answer structures
-            elements = soup.find_all(['div', 'section', 'article'])
-            for element in elements:
-                element_text = element.get_text()
-                
-                # Count question marks followed by content
-                questions = re.findall(r'[^.!?]*\?', element_text)
-                if len(questions) >= 3:  # At least 3 questions in one section
-                    faq_count += 1
-            
-            # Look for accordion/collapsible FAQ structures
-            accordion_elements = soup.find_all(attrs={'class': re.compile(r'(accordion|collapse|faq|toggle)', re.I)})
-            faq_count += len(accordion_elements)
-            
-        except Exception as e:
-            logger.error(f"Error detecting FAQ patterns: {e}")
+        # Structured data presence
+        structured_data = {
+            'json_ld': len(soup.find_all('script', type='application/ld+json')),
+            'microdata': len(soup.find_all(attrs={'itemscope': True})),
+            'rdfa': len(soup.find_all(attrs={'property': True}))
+        }
         
-        return min(faq_count, 20)  # Cap at 20
+        # List structures (good for featured snippets)
+        lists = {
+            'ordered_lists': len(soup.find_all('ol')),
+            'unordered_lists': len(soup.find_all('ul')),
+            'definition_lists': len(soup.find_all('dl'))
+        }
+        
+        # Table structures
+        tables = len(soup.find_all('table'))
+        
+        # Content hierarchy score
+        hierarchy_score = self._calculate_hierarchy_score(soup)
+        
+        return {
+            'semantic_elements': semantic_elements,
+            'semantic_score': sum(1 for count in semantic_elements.values() if count > 0) / len(semantic_elements),
+            'structured_data': structured_data,
+            'structured_data_score': sum(1 for count in structured_data.values() if count > 0) / len(structured_data),
+            'lists': lists,
+            'total_lists': sum(lists.values()),
+            'tables': tables,
+            'hierarchy_score': hierarchy_score
+        }
     
-    def _detect_qa_content(self, soup: BeautifulSoup) -> bool:
-        """
-        Detect if page has Q&A content structure
+    def _analyze_aeo_content(self, soup: BeautifulSoup, faq_analysis: FAQAnalysisResult) -> Dict[str, Any]:
+        """Analyze content specifically for Answer Engine Optimization"""
+        text_content = soup.get_text()
         
-        Args:
-            soup: Parsed HTML content
-            
-        Returns:
-            True if Q&A content detected
-        """
-        try:
-            text_content = soup.get_text().lower()
-            
-            # Look for Q&A indicators
-            qa_indicators = [
-                'question:', 'answer:', 'q:', 'a:',
-                'ask:', 'reply:', 'response:'
-            ]
-            
-            indicator_count = 0
-            for indicator in qa_indicators:
-                if indicator in text_content:
-                    indicator_count += 1
-            
-            # If multiple Q&A indicators found
-            if indicator_count >= 2:
-                return True
-            
-            # Look for structured Q&A in HTML
-            qa_elements = soup.find_all(attrs={'class': re.compile(r'(question|answer|qa)', re.I)})
-            if len(qa_elements) >= 4:  # At least 2 Q&A pairs
-                return True
-            
-            # Check for definition lists (often used for Q&A)
-            dl_elements = soup.find_all('dl')
-            for dl in dl_elements:
-                dt_count = len(dl.find_all('dt'))
-                dd_count = len(dl.find_all('dd'))
-                if dt_count >= 2 and dd_count >= 2:
-                    return True
-            
-        except Exception as e:
-            logger.error(f"Error detecting Q&A content: {e}")
+        # Answer-style content patterns
+        answer_patterns = {
+            'direct_answers': len(re.findall(r'(?i)\b(yes|no),?\s+', text_content)),
+            'step_by_step': len(re.findall(r'(?i)\b(step\s+\d+|first|second|third|next|then|finally)\b', text_content)),
+            'numbered_points': len(re.findall(r'\d+\.\s+', text_content)),
+            'bullet_points': len(soup.find_all('li')),
+            'definitions': len(re.findall(r'(?i)\b\w+\s+is\s+(?:a|an|the)\s+', text_content))
+        }
         
-        return False
+        # Conversational language score
+        conversational_indicators = [
+            r'(?i)\byou\s+(?:can|should|need|want|will)',
+            r'(?i)\blet\'s\s+',
+            r'(?i)\bhere\'s\s+(?:how|what|why)',
+            r'(?i)\bto\s+do\s+this',
+            r'(?i)\bsimply\s+',
+            r'(?i)\bjust\s+',
+        ]
+        
+        conversational_score = 0
+        for pattern in conversational_indicators:
+            conversational_score += len(re.findall(pattern, text_content))
+        
+        # Normalize conversational score
+        conversational_score = min(conversational_score / 20, 1.0)
+        
+        # Featured snippet potential analysis
+        snippet_elements = {
+            'short_paragraphs': len([p for p in soup.find_all('p') 
+                                   if 20 <= len(p.get_text().split()) <= 60]),
+            'definition_paragraphs': len(re.findall(r'(?i)^.{10,100}\s+is\s+.{10,200}$', text_content, re.MULTILINE)),
+            'how_to_content': len(re.findall(r'(?i)\bhow\s+to\s+\w+', text_content)),
+            'comparison_content': len(re.findall(r'(?i)\b(?:vs\.?|versus|compared?\s+to|difference\s+between)\b', text_content))
+        }
+        
+        return {
+            'answer_patterns': answer_patterns,
+            'answer_richness_score': min(sum(answer_patterns.values()) / 50, 1.0),
+            'conversational_score': conversational_score,
+            'snippet_elements': snippet_elements,
+            'snippet_readiness_score': min(sum(snippet_elements.values()) / 20, 1.0),
+            'voice_search_signals': faq_analysis.voice_search_readiness,
+            'faq_intelligence_score': faq_analysis.faq_intelligence_score / 100
+        }
     
-    def _calculate_word_count(self, soup: BeautifulSoup) -> int:
-        """
-        Calculate meaningful word count
+    def _calculate_hierarchy_score(self, soup: BeautifulSoup) -> float:
+        """Calculate content hierarchy quality score"""
+        headings = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
         
-        Args:
-            soup: Parsed HTML content
-            
-        Returns:
-            Word count
-        """
-        try:
-            # Remove script and style elements
-            for script in soup(["script", "style", "nav", "footer", "header"]):
-                script.decompose()
-            
-            # Get text content
-            text = soup.get_text()
-            
-            # Clean and count words
-            words = re.findall(r'\b\w+\b', text)
-            meaningful_words = [word for word in words if len(word) > 2]
-            
-            return len(meaningful_words)
-            
-        except Exception as e:
-            logger.error(f"Error calculating word count: {e}")
-            return 0
-    
-    def _calculate_readability_score(self, soup: BeautifulSoup) -> float:
-        """
-        Calculate basic readability score
-        
-        Args:
-            soup: Parsed HTML content
-            
-        Returns:
-            Readability score (approximate)
-        """
-        try:
-            # Get main content text
-            text = soup.get_text()
-            
-            # Count sentences and words
-            sentences = re.split(r'[.!?]+', text)
-            sentences = [s.strip() for s in sentences if s.strip()]
-            
-            words = re.findall(r'\b\w+\b', text)
-            
-            if not sentences or not words:
-                return 0.0
-            
-            # Average words per sentence
-            avg_words_per_sentence = len(words) / len(sentences)
-            
-            # Simple readability approximation
-            # Lower score = easier to read (better for AEO)
-            if avg_words_per_sentence <= 15:
-                score = 9.0
-            elif avg_words_per_sentence <= 20:
-                score = 7.0
-            elif avg_words_per_sentence <= 25:
-                score = 5.0
-            else:
-                score = 3.0
-            
-            return score
-            
-        except Exception as e:
-            logger.error(f"Error calculating readability: {e}")
+        if not headings:
             return 0.0
-    
-    def _count_conversational_queries(self, soup: BeautifulSoup) -> int:
-        """
-        Count conversational query optimizations
         
-        Args:
-            soup: Parsed HTML content
-            
-        Returns:
-            Number of conversational queries optimized
-        """
-        try:
-            # Get all text content
-            text = soup.get_text()
-            
-            # Count question patterns
-            conversational_count = 0
-            
-            for pattern in self.question_patterns:
-                matches = re.findall(pattern, text, re.IGNORECASE)
-                conversational_count += len(matches)
-            
-            # Look for natural language patterns
-            natural_patterns = [
-                r'\bhow\s+to\s+\w+',
-                r'\bwhat\s+is\s+\w+',
-                r'\bwhy\s+does\s+\w+',
-                r'\bwhen\s+should\s+\w+',
-                r'\bwhere\s+can\s+\w+'
-            ]
-            
-            for pattern in natural_patterns:
-                matches = re.findall(pattern, text, re.IGNORECASE)
-                conversational_count += len(matches)
-            
-            return min(conversational_count, 50)  # Cap at 50
-            
-        except Exception as e:
-            logger.error(f"Error counting conversational queries: {e}")
-            return 0
-    
-    def _get_default_content_result(self) -> ContentResult:
-        """
-        Return default content result when analysis fails
+        score = 0.0
+        h1_count = len(soup.find_all('h1'))
         
-        Returns:
-            Default content result
-        """
-        return ContentResult(
-            heading_structure_score=0,
-            faq_patterns_found=0,
-            qa_content_detected=False,
-            word_count=0,
-            readability_score=0.0,
-            conversational_queries_optimized=0
-        )
-    
-    async def get_content_recommendations(self, result: ContentResult) -> List[str]:
-        """
-        Get content optimization recommendations
+        # Ideal: one H1
+        if h1_count == 1:
+            score += 0.3
+        elif h1_count == 0:
+            score -= 0.2
         
-        Args:
-            result: Content analysis result
+        # Check for logical hierarchy
+        prev_level = 0
+        for heading in headings:
+            level = int(heading.name[1])
             
-        Returns:
-            List of recommendations
-        """
+            # Good progression
+            if level <= prev_level + 1:
+                score += 0.1
+            else:
+                score -= 0.1  # Skipped levels
+            
+            prev_level = level
+        
+        return max(min(score, 1.0), 0.0)
+    
+    def _calculate_content_intelligence_score(self, basic_metrics: Dict, faq_analysis: FAQAnalysisResult, 
+                                            structure_analysis: Dict, aeo_metrics: Dict) -> float:
+        """Calculate overall content intelligence score (0-100)"""
+        score = 0.0
+        
+        # Basic content quality (25% weight)
+        word_count = basic_metrics['word_count']
+        if 300 <= word_count <= 2000:
+            score += 15
+        elif 200 <= word_count < 300 or 2000 < word_count <= 3000:
+            score += 10
+        elif word_count >= 100:
+            score += 5
+        
+        # Heading structure (10% weight)
+        if basic_metrics['total_headings'] >= 3:
+            score += 8
+            if structure_analysis['hierarchy_score'] > 0.7:
+                score += 2
+        elif basic_metrics['total_headings'] >= 1:
+            score += 5
+        
+        # FAQ Intelligence (35% weight) - This is the big upgrade!
+        score += faq_analysis.faq_intelligence_score * 0.35
+        
+        # AEO optimization (20% weight)
+        score += aeo_metrics['answer_richness_score'] * 8
+        score += aeo_metrics['conversational_score'] * 6
+        score += aeo_metrics['snippet_readiness_score'] * 6
+        
+        # Technical structure (10% weight)
+        score += structure_analysis['semantic_score'] * 5
+        score += structure_analysis['structured_data_score'] * 5
+        
+        return min(score, 100)
+    
+    def _generate_content_recommendations(self, basic_metrics: Dict, faq_analysis: FAQAnalysisResult, 
+                                        structure_analysis: Dict, aeo_metrics: Dict) -> List[str]:
+        """Generate specific content improvement recommendations"""
         recommendations = []
         
-        if result.heading_structure_score < 6:
-            recommendations.append("Improve heading structure with clear H1 and logical hierarchy")
+        # FAQ-specific recommendations (most important!)
+        recommendations.extend(faq_analysis.improvement_suggestions)
         
-        if result.faq_patterns_found < 3:
-            recommendations.append("Add dedicated FAQ sections to address common questions")
+        # Content length recommendations
+        word_count = basic_metrics['word_count']
+        if word_count < 200:
+            recommendations.append("Increase content length to at least 300 words for better AEO performance")
+        elif word_count > 3000:
+            recommendations.append("Consider breaking long content into sections or separate pages for better readability")
         
-        if not result.qa_content_detected:
-            recommendations.append("Create Q&A content structure for better AI understanding")
+        # Heading structure
+        if basic_metrics['total_headings'] < 3:
+            recommendations.append("Add more headings (H2, H3) to improve content structure and scannability")
         
-        if result.word_count < 500:
-            recommendations.append("Increase content length to provide comprehensive information")
+        if structure_analysis['hierarchy_score'] < 0.5:
+            recommendations.append("Improve heading hierarchy - use H1 for main title, H2 for sections, H3 for subsections")
         
-        if result.conversational_queries_optimized < 5:
-            recommendations.append("Optimize content for conversational search queries")
+        # AEO-specific recommendations
+        if aeo_metrics['conversational_score'] < 0.3:
+            recommendations.append("Use more conversational language (you, your, let's, here's how) for better voice search optimization")
         
-        return recommendations 
+        if aeo_metrics['answer_richness_score'] < 0.4:
+            recommendations.append("Add more direct answers, numbered lists, and step-by-step instructions")
+        
+        if aeo_metrics['snippet_readiness_score'] < 0.3:
+            recommendations.append("Create more concise paragraphs (20-60 words) that directly answer specific questions")
+        
+        # Structured data
+        if structure_analysis['structured_data_score'] == 0:
+            recommendations.append("Add structured data markup (JSON-LD, Schema.org) to help search engines understand your content")
+        
+        # Images
+        if basic_metrics['image_optimization_ratio'] < 0.8 and basic_metrics['images'] > 0:
+            recommendations.append("Add alt text to all images for better accessibility and SEO")
+        
+        return recommendations[:8]  # Return top 8 recommendations
+    
+    def _serialize_faq_analysis(self, faq_analysis: FAQAnalysisResult) -> Dict[str, Any]:
+        """Convert FAQ analysis result to serializable format"""
+        return {
+            'faq_sections_found': faq_analysis.faq_sections_found,
+            'qa_pairs_count': len(faq_analysis.qa_pairs_extracted),
+            'qa_pairs': [
+                {
+                    'question': pair.question,
+                    'answer': pair.answer,
+                    'answer_length': pair.answer_length,
+                    'readability_score': round(pair.readability_score, 2),
+                    'confidence': round(pair.confidence, 2),
+                    'snippet_potential': round(pair.snippet_potential, 2)
+                }
+                for pair in faq_analysis.qa_pairs_extracted[:10]  # Limit to top 10 for JSON
+            ],
+            'question_quality_score': round(faq_analysis.question_quality_score, 2),
+            'answer_completeness_score': round(faq_analysis.answer_completeness_score, 2),
+            'faq_intelligence_score': round(faq_analysis.faq_intelligence_score, 1),
+            'voice_search_readiness': round(faq_analysis.voice_search_readiness, 2),
+            'featured_snippet_potential': faq_analysis.featured_snippet_potential,
+            'improvement_suggestions': faq_analysis.improvement_suggestions
+        }
+    
+    def _is_internal_link(self, href: str) -> bool:
+        """Check if a link is internal"""
+        if not href:
+            return False
+        return (href.startswith('/') or 
+                href.startswith('#') or 
+                href.startswith('mailto:') or
+                not href.startswith('http'))
+    
+    def _fallback_analysis(self, soup: BeautifulSoup) -> Dict[str, Any]:
+        """Fallback analysis in case of errors"""
+        text_content = soup.get_text()
+        word_count = len(text_content.split())
+        
+        return {
+            'basic_metrics': {
+                'word_count': word_count,
+                'character_count': len(text_content),
+                'headings': {'h1': 0, 'h2': 0, 'h3': 0, 'h4': 0, 'h5': 0, 'h6': 0},
+                'total_headings': 0,
+                'internal_links': 0,
+                'external_links': 0,
+                'total_links': 0,
+                'images': 0,
+                'images_with_alt': 0,
+                'image_optimization_ratio': 0,
+                'content_density': 0,
+                'reading_time_minutes': max(word_count / 200, 1)
+            },
+            'faq_analysis': {
+                'faq_sections_found': 0,
+                'qa_pairs_count': 0,
+                'qa_pairs': [],
+                'question_quality_score': 0,
+                'answer_completeness_score': 0,
+                'faq_intelligence_score': 0,
+                'voice_search_readiness': 0,
+                'featured_snippet_potential': 0,
+                'improvement_suggestions': ["Error in analysis - please check content format"]
+            },
+            'structure_analysis': {},
+            'aeo_metrics': {},
+            'content_intelligence_score': 20,  # Basic fallback score
+            'recommendations': ["Unable to perform full analysis - please ensure content is properly formatted"]
+        } 
