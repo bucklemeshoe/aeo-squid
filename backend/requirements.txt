@@ -1,18 +1,18 @@
 # Web framework
-fastapi==0.68.0
-uvicorn==0.15.0
+fastapi==0.104.1
+uvicorn==0.24.0
 
 # Database and ORM
-sqlalchemy==1.4.23
-alembic==1.7.1
+sqlalchemy==2.0.23
+alembic==1.12.1
 
 # HTTP client for web requests
-aiohttp==3.7.4
+aiohttp==3.9.1
 requests==2.32.4
 
 # HTML parsing
-beautifulsoup4==4.9.3
-lxml==4.6.3
+beautifulsoup4==4.12.2
+lxml==4.9.3
 
 # Configuration
 python-dotenv==0.19.0
@@ -22,14 +22,15 @@ structlog==21.1.0
 
 # Data validation
 pydantic==2.11.7
+email-validator==2.1.0
 
 # Date/time handling
 python-dateutil==2.8.2
 
 # NLP and Content Intelligence (NEW!)
-spacy==3.8.7
-textstat==0.7.7
-nltk==3.9.1
+spacy==3.7.2
+textstat==0.7.3
+nltk==3.8.1
 
 # Enhanced data processing
-numpy==2.3.1 
+numpy==1.24.3 
